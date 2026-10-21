@@ -1,5 +1,9 @@
 # tf-jenkins
 
+
+### LAUNCH EC2instance 
+
+
 ### Install jenkins 
 ````
 sudo apt update
@@ -19,21 +23,30 @@ wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/sh
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
 sudo apt update && sudo apt install terraform -y
 ````
+### Install AWS CLI 
 
+````
+sudo apt install unzip -y
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+````
+
+###  Create IAM role assign adminacess
+- also attach iam role to ec2 instance 
 ---
 
 ### Install following plugins
 ````
 terraform
 stage view
-aws credentials
 ````
 
 ### manage jenkins >> tools
 **terraform** = terraform
 
-### manage jenkins >> credentials 
-kind: aws credentaials
+
 
 
 ---
@@ -87,67 +100,7 @@ pipeline {
     }
 }
 ````
-```groovy
-pipeline {
-    agent any 
-    
-    tools {
-        terraform 'terraform'
-    }
-    
-    stages{
-        stage('code-pull'){
-            steps {
-                git branch: 'main', url: 'https://github.com/abhipraydhoble/tf-jenkins.git'
-            }
-        }
-        
-        stage('init'){
-            steps {
-              withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {       
-                  sh 'terraform init'
-              }
-            }
-        }
-        stage('fmt'){
-            steps {
-              withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {       
-                  sh 'terraform fmt'
-              }
-            }
-        }
-        
-        stage('validate'){
-            steps {
-              withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {       
-                  sh 'terraform validate'
-              }
-            }
-        }
-        stage('plan'){
-            steps {
-              withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {       
-                  sh 'terraform plan'
-              }
-            }
-        }
-        stage('apply'){
-            steps {
-              withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {       
-                  sh 'terraform $action -auto-approve'
-              }
-            }
-        }
-        stage('destroy'){
-            steps {
-              withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {       
-                  sh 'terraform $action -auto-approve'
-              }
-            }
-        }
-    }
-}
-```
+
 
 ---
 
