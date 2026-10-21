@@ -1,7 +1,7 @@
 resource "aws_instance" "vm" {
-  ami           = "ami-0543dbdaf4e114be7"
+  ami           = "ami-05d5be6ae9f27c660"
   instance_type = "t3.micro"
-  key_name      = "id_rsa"
+  key_name      = "ssh-key"
   tags = {
     Name = "tf-server"
   }
