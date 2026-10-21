@@ -39,7 +39,54 @@ kind: aws credentaials
 ---
 <img width="1917" height="667" alt="image" src="https://github.com/user-attachments/assets/7e1c1b9f-8524-45b7-92c2-554a0e31dd5a" />
 
+````
 
+pipeline {
+    agent any
+
+    tools {
+        terraform 'terraform'
+    }
+
+    parameters {
+        choice(name: 'action', choices: ['apply', 'destroy'])
+    }
+
+    stages {
+        stage('code-pull') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/abhipraydhoble/tf-jenkins.git'
+            }
+        }
+
+        stage('init') {
+            steps {
+                sh 'terraform init'
+            }
+        }
+
+        stage('validate') {
+            steps {
+                sh 'terraform validate'
+            }
+        }
+
+        stage('plan') {
+            steps {
+                sh 'terraform plan -out=tfplan'
+            }
+        }
+
+        stage('apply/destroy') {
+            steps {
+                input message: "Approve ${params.action}?"
+                sh "terraform ${params.action} -auto-approve"
+            }
+        }
+    }
+}
+````
 ```groovy
 pipeline {
     agent any 
